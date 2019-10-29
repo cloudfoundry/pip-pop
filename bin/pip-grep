@@ -9,16 +9,35 @@ Options:
 """
 import os
 from docopt import docopt
-try:
-    from pip.req import parse_requirements
-    from pip.index import PackageFinder
-except:
+import pip
+from distutils.version import StrictVersion
+
+pip_version = StrictVersion(pip.__version__)
+
+if pip_version >= StrictVersion('19.3.0'):
     from pip._internal.req import parse_requirements
     from pip._internal.index import PackageFinder
-from pip._vendor.requests import session
+    from pip._internal.models.search_scope import SearchScope
+    from pip._internal.models.selection_prefs import SelectionPreferences
+    from pip._internal.collector import LinkCollector
+elif pip_version >= StrictVersion('19.2.0'):
+    from pip._internal.req import parse_requirements
+    from pip._internal.index import PackageFinder
+    from pip._internal.models.search_scope import SearchScope
+    from pip._internal.models.selection_prefs import SelectionPreferences
+elif pip_version >= StrictVersion('18.1.0'):
+    from pip._internal.req import parse_requirements
+    from pip._internal.index import PackageFinder
+else:
+    from pip.req import parse_requirements
+    from pip.index import PackageFinder
 
-requests = session()
-
+if pip_version >= StrictVersion('19.3.1'):
+    from pip._internal.network.session import PipSession
+    requests = PipSession()
+else:
+    from pip._vendor.requests import session
+    requests = session()
 
 class Requirements(object):
     def __init__(self, reqfile=None):
@@ -36,7 +55,20 @@ class Requirements(object):
         if not os.path.exists(reqfile):
             raise ValueError('The given requirements file does not exist.')
 
-        finder = PackageFinder([], [], session=requests)
+        if pip_version >= StrictVersion('19.3.1'):
+            search_scope = SearchScope([], [])
+            collector = LinkCollector(session=requests, search_scope=search_scope)
+            selection_prefs = SelectionPreferences(allow_yanked=True)
+            finder = PackageFinder.create(link_collector=collector, selection_prefs=selection_prefs)
+        elif pip_version >= StrictVersion('19.2.0'):
+            search_scope = SearchScope([], [])
+            selection_prefs = SelectionPreferences(allow_yanked=True)
+            finder = PackageFinder.create(session=requests, search_scope=search_scope, selection_prefs=selection_prefs)
+        elif pip_version == StrictVersion('18.1.0'):
+            finder = PackageFinder([], [], session=requests)
+        else:
+            finder = PackageFinder([], [], session=requests)
+
         for requirement in parse_requirements(reqfile, finder=finder, session=requests):
             if requirement.req:
                 if not getattr(requirement.req, 'name', None):

@@ -7,7 +7,7 @@ from setuptools import setup
 
 setup(
     name='pip-pop',
-    version='0.1.3',
+    version='0.1.4',
     url='https://github.com/kennethreitz/pip-pop',
     license='MIT',
     author='Kenneth Reitz',
