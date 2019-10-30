@@ -45,5 +45,5 @@ We need to create a tarball that contains a distribution of this repo (as a tarb
 1. Create a tarball of the pip-pop code (``python setup.py sdist``)
 2. Download the latest artifact from buildpacks.cloudfoundry.org (``wget https://buildpacks.cloudfoundry.org/dependencies/manual-binaries/pip-pop/pip-pop-0.1.3-fc106ef6.tar.gz``)
 3. Extract the docopt tarball into the ``dist`` directory (``tar xf pip-pop-0.1.3-fc106ef6.tar.gz -C dist docopt-0.6.2.tar.gz``)
-4. Create a new tarball containing the new pip-pop tarball and the docopt tarball (``tar cf pip-pop.tgz -C dist ./``)
+4. Create a new tarball containing the new pip-pop tarball and the docopt tarball (``tar czf pip-pop.tgz -C dist ./``)
 5. Rename the file to include the version and the first 8 characters of it's sha256 (``mv pip-pop.tgz pip-pop-0.1.4-$(shasum -a256 pip-pop.tgz | cut -c1-8).tar.gz``)
